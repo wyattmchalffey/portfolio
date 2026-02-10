@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "WebSearch",
+      "WebFetch(domain:www.belenalbeza.com)",
+      "WebFetch(domain:www.w3schools.com)",
+      "Bash(python3:*)",
+      "Bash(node -e:*)",
+      "Bash(node -c:*)",
+      "Bash(node:*)",
+      "Bash(npx:*)",
+      "Bash(timeout:*)",
+      "Bash(curl:*)",
+      "Bash(powershell -c:*)",
+      "Bash(powershell -Command \"\\(Invoke-WebRequest -Uri ''http://localhost:3000/projects.js'' -UseBasicParsing\\).StatusCode\")",
+      "Bash(powershell -Command \"\\(Invoke-WebRequest -Uri ''http://localhost:3000/index.html'' -UseBasicParsing\\).StatusCode\")",
+      "Bash(powershell -Command \"\\(Invoke-WebRequest -Uri ''http://localhost:3000/game.js'' -UseBasicParsing\\).StatusCode\")",
+      "Bash(powershell -Command \"Start-Sleep 3; \\(Invoke-WebRequest -Uri ''http://localhost:3001/game.js'' -UseBasicParsing\\).StatusCode\")",
+      "WebFetch(domain:steamdle.com)",
+      "Bash(powershell -Command \"Start-Sleep 2; Start-Process ''http://localhost:3001''\")",
+      "Bash(powershell -Command \"Start-Sleep 2; Start-Process ''http://localhost:3002''\")",
+      "Bash(del \"C:\\\\Users\\\\Wyatt\\\\Desktop\\\\portfolio\\\\_count_check.js\")",
+      "Bash(dir:*)"
+    ]
+  }
+}

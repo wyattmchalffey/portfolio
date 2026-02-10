@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wyatt's Portfolio — Explore My World</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0d0d1a;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  #game-container {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #gameCanvas {
+    image-rendering: pixelated;
+    image-rendering: crisp-edges;
+    display: block;
+    border: 2px solid #2a2a4a;
+  }
+
+  /* ── Dialog Box ─────────────────────────── */
+  #dialog-box {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 92%;
+    max-width: 700px;
+    background: #1a1a2e;
+    border: 3px solid #e8d8b8;
+    border-radius: 4px;
+    padding: 20px 26px;
+    z-index: 100;
+    box-shadow: 0 0 20px rgba(0,0,0,0.7);
+  }
+
+  #dialog-name {
+    color: #e8d060;
+    font-size: 14px;
+    margin-bottom: 10px;
+    letter-spacing: 1px;
+  }
+
+  #dialog-text {
+    color: #e8e8e8;
+    font-size: 12px;
+    line-height: 2;
+    min-height: 28px;
+  }
+
+  #dialog-link {
+    display: none;
+    color: #88bbff;
+    font-size: 9px;
+    margin-top: 10px;
+    text-decoration: none;
+    border: 1px solid #88bbff;
+    padding: 4px 10px;
+    border-radius: 2px;
+    transition: background 0.2s;
+  }
+
+  #dialog-link:hover {
+    background: rgba(136,187,255,0.15);
+  }
+
+  #dialog-hint {
+    display: none;
+    color: #888;
+    font-size: 10px;
+    text-align: right;
+    margin-top: 10px;
+  }
+
+  /* ── Interact Prompt ────────────────────── */
+  #interact-prompt {
+    display: none;
+    position: fixed;
+    bottom: 130px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0,0,0,0.75);
+    color: #e8d8b8;
+    font-size: 11px;
+    padding: 8px 18px;
+    border: 1px solid #e8d8b8;
+    border-radius: 3px;
+    z-index: 90;
+    animation: prompt-bounce 1s infinite;
+    pointer-events: none;
+  }
+
+  @keyframes prompt-bounce {
+    0%, 100% { transform: translateX(-50%) translateY(0); }
+    50% { transform: translateX(-50%) translateY(-4px); }
+  }
+
+  /* ── Project Modal ──────────────────────── */
+  #project-modal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.8);
+    justify-content: center;
+    align-items: center;
+    z-index: 200;
+  }
+
+  .modal-content {
+    background: #1a1a2e;
+    border: 3px solid #aa88dd;
+    border-radius: 6px;
+    padding: 32px 36px;
+    max-width: 540px;
+    width: 92%;
+    position: relative;
+    box-shadow: 0 0 40px rgba(130,100,220,0.3);
+  }
+
+  #modal-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: #888;
+    font-size: 18px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  #modal-close:hover { color: #fff; }
+
+  #modal-title {
+    color: #cc99ff;
+    font-size: 16px;
+    margin-bottom: 16px;
+  }
+
+  #modal-desc {
+    color: #ccc;
+    font-size: 11px;
+    line-height: 2;
+    margin-bottom: 18px;
+  }
+
+  #modal-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 18px;
+  }
+
+  .tag {
+    background: rgba(130,100,220,0.2);
+    color: #bb99ee;
+    font-size: 9px;
+    padding: 5px 10px;
+    border: 1px solid rgba(130,100,220,0.4);
+    border-radius: 3px;
+  }
+
+  #modal-link {
+    display: inline-block;
+    color: #1a1a2e;
+    background: #aa88dd;
+    font-size: 11px;
+    font-family: 'Press Start 2P', monospace;
+    padding: 10px 22px;
+    text-decoration: none;
+    border-radius: 3px;
+    transition: background 0.2s;
+  }
+
+  #modal-link:hover { background: #cc99ff; }
+
+  /* ── Instructions Overlay ───────────────── */
+  #instructions {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 300;
+    cursor: pointer;
+  }
+
+  .instructions-box {
+    text-align: center;
+    color: #e8d8b8;
+  }
+
+  .instructions-box h1 {
+    font-size: 16px;
+    color: #cc99ff;
+    margin-bottom: 24px;
+    line-height: 1.6;
+  }
+
+  .instructions-box p {
+    font-size: 8px;
+    line-height: 2.4;
+    color: #aaa;
+    margin-bottom: 8px;
+  }
+
+  .instructions-box .key {
+    display: inline-block;
+    background: #2a2a4a;
+    color: #e8d8b8;
+    padding: 3px 8px;
+    border: 1px solid #555;
+    border-radius: 3px;
+    font-size: 8px;
+    margin: 0 2px;
+  }
+
+  .instructions-box .start-hint {
+    color: #888;
+    font-size: 8px;
+    margin-top: 28px;
+    animation: blink 1.5s infinite;
+  }
+
+  @keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  /* ── Player Count Indicator ────────────── */
+  #player-count {
+    display: none;
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    background: rgba(0,0,0,0.6);
+    color: #88ff88;
+    font-size: 7px;
+    padding: 4px 8px;
+    border: 1px solid rgba(136,255,136,0.3);
+    border-radius: 3px;
+    z-index: 50;
+    pointer-events: none;
+  }
+
+  /* ── Garden: Seed Picker ─────────────────── */
+  #garden-seed-picker {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a2a1a;
+    border: 3px solid #44aa44;
+    border-radius: 6px;
+    padding: 22px 28px;
+    width: 92%;
+    max-width: 440px;
+    max-height: 80vh;
+    overflow-y: auto;
+    z-index: 210;
+    box-shadow: 0 0 30px rgba(68,170,68,0.3);
+  }
+
+  #garden-seed-picker h3 {
+    color: #66dd66;
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  #garden-seed-season {
+    color: #88aa88;
+    font-size: 10px;
+    margin-bottom: 14px;
+  }
+
+  .garden-seed-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(68,170,68,0.2);
+    border-radius: 3px;
+    margin-bottom: 5px;
+    cursor: pointer;
+    transition: background 0.15s;
+    flex-wrap: wrap;
+  }
+
+  .garden-seed-row:hover:not(.locked),
+  .garden-seed-row.selected:not(.locked) {
+    background: rgba(68,170,68,0.15);
+  }
+
+  .garden-seed-row.selected:not(.locked) {
+    border-color: #44aa44;
+  }
+
+  .garden-seed-row.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .seed-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .seed-name {
+    color: #ccddcc;
+    font-size: 11px;
+    flex: 1;
+  }
+
+  .seed-rarity {
+    font-size: 9px;
+    text-transform: uppercase;
+  }
+
+  .seed-hint {
+    width: 100%;
+    color: #777;
+    font-size: 8px;
+    margin-top: 3px;
+    padding-left: 20px;
+  }
+
+  #garden-seed-nav-hint {
+    color: #667766;
+    font-size: 8px;
+    margin-top: 10px;
+    text-align: center;
+  }
+
+  #garden-seed-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: #88aa88;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  #garden-seed-close:hover { color: #ccffcc; }
+
+  /* ── Garden: Action Menu ─────────────────── */
+  #garden-action-menu {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a2a1a;
+    border: 3px solid #44aa44;
+    border-radius: 6px;
+    padding: 22px 28px;
+    width: 92%;
+    max-width: 360px;
+    z-index: 210;
+    box-shadow: 0 0 30px rgba(68,170,68,0.3);
+    text-align: center;
+  }
+
+  #garden-action-name {
+    font-size: 14px;
+    margin-bottom: 8px;
+  }
+
+  #garden-action-stage {
+    color: #88aa88;
+    font-size: 10px;
+    margin-bottom: 16px;
+  }
+
+  .garden-action-btns {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 12px;
+  }
+
+  .garden-action-btns button {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 10px;
+    padding: 8px 16px;
+    border: 1px solid #44aa44;
+    border-radius: 3px;
+    background: rgba(68,170,68,0.15);
+    color: #88dd88;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .garden-action-btns button:hover:not(:disabled),
+  .garden-action-btns button.selected:not(:disabled) {
+    background: rgba(68,170,68,0.3);
+  }
+
+  .garden-action-btns button:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  #garden-action-close {
+    position: absolute;
+    top: 10px;
+    right: 14px;
+    background: none;
+    border: none;
+    color: #88aa88;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  #garden-action-close:hover { color: #ccffcc; }
+
+  #garden-action-nav-hint {
+    color: #667766;
+    font-size: 8px;
+    margin-top: 6px;
+  }
+
+  #garden-journal-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 6px 14px;
+    border: 1px solid rgba(68,170,68,0.3);
+    border-radius: 3px;
+    background: none;
+    color: #669966;
+    cursor: pointer;
+  }
+
+  #garden-journal-btn:hover { color: #aaddaa; }
+
+  /* ── Garden: Journal Modal ───────────────── */
+  #garden-journal {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 220;
+  }
+
+  .journal-content {
+    background: #1a2a1a;
+    border: 3px solid #44aa44;
+    border-radius: 6px;
+    padding: 26px 30px;
+    max-width: 520px;
+    width: 92%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 0 40px rgba(68,170,68,0.3);
+  }
+
+  .journal-content h3 {
+    color: #66dd66;
+    font-size: 14px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  #garden-journal-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .journal-cell {
+    background: rgba(68,170,68,0.08);
+    border: 1px solid rgba(68,170,68,0.15);
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+    overflow: hidden;
+  }
+
+  .journal-cell.discovered {
+    border-color: rgba(68,170,68,0.4);
+  }
+
+  .journal-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    margin: 0 auto 8px;
+  }
+
+  .journal-name {
+    color: #aaccaa;
+    font-size: 8px;
+    line-height: 1.8;
+  }
+
+  .journal-rarity {
+    font-size: 7px;
+    text-transform: uppercase;
+    margin-top: 4px;
+  }
+
+  .journal-desc {
+    color: #7a997a;
+    font-size: 7px;
+    line-height: 1.6;
+    margin-top: 6px;
+    text-align: left;
+  }
+
+  .journal-stats {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin-top: 6px;
+    padding-top: 5px;
+    border-top: 1px solid rgba(68,170,68,0.15);
+    font-size: 7px;
+    color: #88aa88;
+    text-align: left;
+  }
+
+  #garden-journal-stats {
+    color: #88aa88;
+    font-size: 10px;
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  #garden-journal-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #88aa88;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  #garden-journal-close:hover { color: #ccffcc; }
+
+  .journal-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid rgba(68,170,68,0.2);
+    padding-bottom: 8px;
+  }
+
+  .journal-tab {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 6px 14px;
+    border: 1px solid rgba(68,170,68,0.2);
+    border-radius: 3px 3px 0 0;
+    background: none;
+    color: #668866;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .journal-tab:hover { color: #aaddaa; }
+
+  .journal-tab.active {
+    background: rgba(68,170,68,0.2);
+    color: #88dd88;
+    border-color: #44aa44;
+  }
+
+  .journal-tab-content {
+    display: none;
+  }
+
+  .journal-tab-content.active {
+    display: block;
+  }
+
+  .journal-placeholder {
+    text-align: center;
+    padding: 24px 12px;
+  }
+
+  .journal-placeholder-title {
+    color: #88dd88;
+    font-size: 12px;
+    margin-bottom: 14px;
+  }
+
+  .journal-placeholder-text {
+    color: #aaccaa;
+    font-size: 9px;
+    line-height: 2.2;
+    margin-bottom: 16px;
+  }
+
+  .journal-placeholder-note {
+    color: #667766;
+    font-size: 8px;
+    font-style: italic;
+  }
+
+  .map-tab-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 0;
+  }
+  #map-tab-canvas {
+    image-rendering: pixelated;
+    border: 1px solid #557755;
+    max-width: 100%;
+  }
+  .map-legend {
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .map-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    color: #aaccaa;
+    font-size: 9px;
+  }
+  .map-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    display: inline-block;
+  }
+
+  #journal-inventory-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+
+  .inventory-cell {
+    background: rgba(68,170,68,0.08);
+    border: 1px solid rgba(68,170,68,0.4);
+    border-radius: 4px;
+    padding: 10px;
+    text-align: center;
+  }
+
+  .inventory-count {
+    color: #88dd88;
+    font-size: 12px;
+    margin-top: 6px;
+  }
+
+  .inventory-empty {
+    color: #667766;
+    font-size: 10px;
+    text-align: center;
+    padding: 24px 12px;
+  }
+
+  #journal-inventory-stats {
+    color: #88aa88;
+    font-size: 10px;
+    text-align: center;
+    margin-top: 10px;
+  }
+
+  #garden-journal-nav-hint {
+    color: #556655;
+    font-size: 8px;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  /* ── Library UI ──────────────────────────── */
+  #library-book {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 220;
+  }
+
+  .library-content {
+    background: #1a1a2a;
+    border: 3px solid #7788aa;
+    border-radius: 6px;
+    padding: 26px 30px;
+    max-width: 420px;
+    width: 92%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 0 40px rgba(100,130,200,0.3);
+  }
+
+  .library-content h3 {
+    color: #aabbdd;
+    font-size: 13px;
+    margin-bottom: 16px;
+    text-align: center;
+  }
+
+  #library-body {
+    margin-bottom: 14px;
+  }
+
+  .library-line-heading {
+    color: #ccddaa;
+    font-size: 9px;
+    margin-top: 8px;
+    margin-bottom: 2px;
+  }
+
+  .library-line-detail {
+    color: #8899aa;
+    font-size: 8px;
+    line-height: 2;
+    padding-left: 8px;
+  }
+
+  .library-line-blank {
+    height: 6px;
+  }
+
+  .library-locked-text {
+    color: #667788;
+    font-size: 9px;
+    text-align: center;
+    padding: 20px 10px;
+    line-height: 2.2;
+  }
+
+  #library-cost {
+    color: #ddaa33;
+    font-size: 10px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+
+  #library-actions {
+    text-align: center;
+  }
+
+  #library-buy-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 8px 20px;
+    background: rgba(100,130,200,0.15);
+    border: 1px solid #7788aa;
+    border-radius: 3px;
+    color: #aabbdd;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  #library-buy-btn:hover:not(:disabled) {
+    background: rgba(100,130,200,0.3);
+    color: #ccddff;
+  }
+
+  #library-buy-btn:disabled {
+    opacity: 0.4;
+    cursor: default;
+  }
+
+  #library-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #667788;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  #library-close:hover { color: #aabbdd; }
+
+  .library-nav-hint {
+    color: #445566;
+    font-size: 8px;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  /* ── Store UI ───────────────────────────── */
+  #store-ui {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 220;
+  }
+
+  .store-content {
+    background: #2a1a0a;
+    border: 3px solid #cc8833;
+    border-radius: 6px;
+    padding: 26px 30px;
+    max-width: 440px;
+    width: 92%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 0 40px rgba(204,136,51,0.3);
+  }
+
+  .store-content h3 {
+    color: #ddaa44;
+    font-size: 14px;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  #store-gold {
+    color: #ddaa33;
+    font-size: 10px;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .store-tabs {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 14px;
+    border-bottom: 1px solid rgba(204,136,51,0.3);
+    padding-bottom: 8px;
+  }
+
+  .store-tab {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 9px;
+    padding: 6px 18px;
+    border: 1px solid rgba(204,136,51,0.3);
+    border-radius: 3px 3px 0 0;
+    background: none;
+    color: #886633;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .store-tab:hover { color: #ddaa44; }
+
+  .store-tab.active {
+    background: rgba(204,136,51,0.2);
+    color: #ddaa44;
+    border-color: #cc8833;
+  }
+
+  .store-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(204,136,51,0.15);
+    border-radius: 3px;
+    margin-bottom: 5px;
+    transition: background 0.15s;
+  }
+
+  .store-row.selected {
+    background: rgba(204,136,51,0.15);
+    border-color: #cc8833;
+  }
+
+  .store-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .store-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .store-item-name {
+    color: #ddccaa;
+    font-size: 10px;
+    display: block;
+  }
+
+  .store-item-desc {
+    color: #887766;
+    font-size: 7px;
+    line-height: 1.6;
+    margin-top: 2px;
+  }
+
+  .store-item-owned {
+    color: #998866;
+    font-size: 8px;
+    margin-top: 2px;
+  }
+
+  .store-cost {
+    color: #ddaa33;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .store-price {
+    color: #44cc44;
+    font-size: 10px;
+    flex-shrink: 0;
+  }
+
+  .store-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    padding: 5px 10px;
+    border: 1px solid #cc8833;
+    border-radius: 3px;
+    background: rgba(204,136,51,0.15);
+    color: #ddaa44;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+
+  .store-btn:hover:not(:disabled) {
+    background: rgba(204,136,51,0.3);
+  }
+
+  .store-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .store-empty {
+    color: #776644;
+    font-size: 10px;
+    text-align: center;
+    padding: 20px 10px;
+  }
+
+  #store-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #886633;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  #store-close:hover { color: #ddaa44; }
+
+  .store-nav-hint {
+    color: #554422;
+    font-size: 8px;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  /* ── Quest Log Styles ──────────────────────── */
+  .quest-npc-header {
+    color: #88dd88;
+    font-size: 11px;
+    margin-top: 12px;
+    margin-bottom: 6px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid rgba(68,170,68,0.2);
+  }
+
+  .quest-npc-header:first-child { margin-top: 0; }
+
+  .quest-card {
+    background: rgba(68,170,68,0.06);
+    border: 1px solid rgba(68,170,68,0.2);
+    border-radius: 4px;
+    padding: 8px 10px;
+    margin-bottom: 6px;
+  }
+
+  .quest-card.quest-completed {
+    opacity: 0.5;
+  }
+
+  .quest-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 4px;
+  }
+
+  .quest-title {
+    color: #aaddaa;
+    font-size: 9px;
+  }
+
+  .quest-badge {
+    font-size: 7px;
+    padding: 2px 6px;
+    border-radius: 2px;
+    text-transform: uppercase;
+  }
+
+  .quest-badge-active {
+    background: rgba(68,170,68,0.2);
+    color: #88dd88;
+    border: 1px solid rgba(68,170,68,0.4);
+  }
+
+  .quest-badge-completed {
+    background: rgba(136,136,136,0.15);
+    color: #888;
+    border: 1px solid rgba(136,136,136,0.3);
+  }
+
+  .quest-badge-available {
+    background: rgba(255,220,68,0.15);
+    color: #ddcc44;
+    border: 1px solid rgba(255,220,68,0.3);
+  }
+
+  .quest-desc {
+    color: #7a997a;
+    font-size: 8px;
+    line-height: 1.6;
+    margin-bottom: 4px;
+  }
+
+  .quest-progress {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+
+  .quest-progress-bar {
+    flex: 1;
+    height: 4px;
+    background: #333;
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .quest-progress-fill {
+    height: 100%;
+    background: #44cc44;
+    border-radius: 2px;
+    transition: width 0.3s;
+  }
+
+  .quest-progress-text {
+    color: #88aa88;
+    font-size: 7px;
+    flex-shrink: 0;
+  }
+
+  .quest-reward {
+    color: #ddaa33;
+    font-size: 7px;
+  }
+
+  .quest-empty {
+    color: #667766;
+    font-size: 10px;
+    text-align: center;
+    padding: 24px 12px;
+  }
+
+  /* ── Crafting UI ───────────────────────────── */
+  #crafting-ui {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.85);
+    justify-content: center;
+    align-items: center;
+    z-index: 220;
+  }
+
+  .crafting-content {
+    background: #2a1a0a;
+    border: 3px solid #cc8833;
+    border-radius: 6px;
+    padding: 26px 30px;
+    max-width: 480px;
+    width: 92%;
+    max-height: 80vh;
+    overflow-y: auto;
+    position: relative;
+    box-shadow: 0 0 40px rgba(204,136,51,0.3);
+  }
+
+  .crafting-content h3 {
+    color: #ddaa44;
+    font-size: 14px;
+    margin-bottom: 6px;
+    text-align: center;
+  }
+
+  #crafting-gold {
+    color: #ddaa33;
+    font-size: 10px;
+    text-align: center;
+    margin-bottom: 14px;
+  }
+
+  .crafting-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 8px 10px;
+    border: 1px solid rgba(204,136,51,0.15);
+    border-radius: 3px;
+    margin-bottom: 5px;
+    transition: background 0.15s;
+  }
+
+  .crafting-row.selected {
+    background: rgba(204,136,51,0.15);
+    border-color: #cc8833;
+  }
+
+  .crafting-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .crafting-info {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .crafting-item-name {
+    color: #ddccaa;
+    font-size: 10px;
+    display: block;
+  }
+
+  .crafting-item-desc {
+    color: #887766;
+    font-size: 7px;
+    line-height: 1.6;
+    margin-top: 2px;
+  }
+
+  .crafting-ingredients {
+    font-size: 7px;
+    margin-top: 3px;
+    line-height: 1.8;
+  }
+
+  .crafting-ing-ok {
+    color: #44cc44;
+  }
+
+  .crafting-ing-need {
+    color: #cc4444;
+  }
+
+  .crafting-owned {
+    color: #998866;
+    font-size: 8px;
+    margin-top: 2px;
+  }
+
+  .crafting-btn {
+    font-family: 'Press Start 2P', monospace;
+    font-size: 8px;
+    padding: 5px 10px;
+    border: 1px solid #cc8833;
+    border-radius: 3px;
+    background: rgba(204,136,51,0.15);
+    color: #ddaa44;
+    cursor: pointer;
+    flex-shrink: 0;
+    margin-top: 2px;
+    transition: background 0.15s;
+  }
+
+  .crafting-btn:hover:not(:disabled) {
+    background: rgba(204,136,51,0.3);
+  }
+
+  .crafting-btn:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+  }
+
+  .crafting-empty {
+    color: #776644;
+    font-size: 10px;
+    text-align: center;
+    padding: 20px 10px;
+    line-height: 2;
+  }
+
+  #crafting-close {
+    position: absolute;
+    top: 8px;
+    right: 12px;
+    background: none;
+    border: none;
+    color: #886633;
+    font-size: 16px;
+    cursor: pointer;
+    font-family: 'Press Start 2P', monospace;
+  }
+
+  #crafting-close:hover { color: #ddaa44; }
+
+  .crafting-nav-hint {
+    color: #554422;
+    font-size: 8px;
+    text-align: center;
+    margin-top: 12px;
+  }
+
+  /* ── Use Item Sub-menu ─────────────────────── */
+  #garden-useitem-menu {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1a2a1a;
+    border: 3px solid #44aa44;
+    border-radius: 6px;
+    padding: 22px 28px;
+    width: 92%;
+    max-width: 340px;
+    z-index: 215;
+    box-shadow: 0 0 30px rgba(68,170,68,0.3);
+    text-align: center;
+  }
+
+  #garden-useitem-menu h4 {
+    color: #66dd66;
+    font-size: 12px;
+    margin-bottom: 12px;
+  }
+
+  .useitem-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border: 1px solid rgba(68,170,68,0.2);
+    border-radius: 3px;
+    margin-bottom: 4px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+
+  .useitem-row:hover, .useitem-row.selected {
+    background: rgba(68,170,68,0.15);
+    border-color: #44aa44;
+  }
+
+  .useitem-name {
+    color: #ccddcc;
+    font-size: 9px;
+    flex: 1;
+  }
+
+  .useitem-count {
+    color: #88aa88;
+    font-size: 8px;
+  }
+
+  .useitem-empty {
+    color: #667766;
+    font-size: 9px;
+    padding: 12px;
+  }
+
+  #garden-useitem-hint {
+    color: #667766;
+    font-size: 8px;
+    margin-top: 8px;
+  }
+</style>
+</head>
+<body>
+
+<div id="game-container">
+  <canvas id="gameCanvas"></canvas>
+</div>
+
+<!-- Player count indicator -->
+<div id="player-count"></div>
+
+<!-- Interact prompt -->
+<div id="interact-prompt">Press E to interact</div>
+
+<!-- Dialog box -->
+<div id="dialog-box">
+  <div id="dialog-name"></div>
+  <div id="dialog-text"></div>
+  <a id="dialog-link" href="#" target="_blank" rel="noopener"></a>
+  <div id="dialog-hint"></div>
+</div>
+
+<!-- Project modal -->
+<div id="project-modal">
+  <div class="modal-content">
+    <button id="modal-close">x</button>
+    <h2 id="modal-title"></h2>
+    <p id="modal-desc"></p>
+    <div id="modal-tags"></div>
+    <a id="modal-link" href="#" target="_blank" rel="noopener">Visit Project</a>
+  </div>
+</div>
+
+<!-- Instructions overlay -->
+<div id="instructions">
+  <div class="instructions-box">
+    <h1>Welcome to<br>Wyatt's Portfolio</h1>
+    <p>
+      <span class="key">W</span><span class="key">A</span><span class="key">S</span><span class="key">D</span>
+      or Arrow Keys to move
+    </p>
+    <p>
+      <span class="key">E</span> or <span class="key">Space</span> to interact
+    </p>
+    <p>
+      <span class="key">ESC</span> to close dialogs
+    </p>
+    <p>
+      <span class="key">J</span> to open journal
+    </p>
+    <p class="start-hint">Press any key to start</p>
+  </div>
+</div>
+
+<!-- Garden: Seed Picker -->
+<div id="garden-seed-picker">
+  <button id="garden-seed-close">x</button>
+  <h3>Plant a Seed</h3>
+  <div id="garden-seed-season"></div>
+  <div id="garden-seed-list"></div>
+  <div id="garden-seed-nav-hint">W/S to select, E to plant, ESC to close</div>
+</div>
+
+<!-- Garden: Action Menu -->
+<div id="garden-action-menu">
+  <button id="garden-action-close">x</button>
+  <div id="garden-action-name"></div>
+  <div id="garden-action-stage"></div>
+  <div class="garden-action-btns">
+    <button id="garden-water-btn">Water</button>
+    <button id="garden-fert-btn">Fertilize (0/3)</button>
+  </div>
+  <button id="garden-journal-btn">Open Journal</button>
+  <div id="garden-action-nav-hint">A/D to select, E to confirm, J for journal</div>
+</div>
+
+<!-- Journal Modal (tabbed) -->
+<div id="garden-journal">
+  <div class="journal-content">
+    <button id="garden-journal-close">x</button>
+    <h3>Journal</h3>
+    <div class="journal-tabs">
+      <button class="journal-tab active" data-tab="inventory">Inventory</button>
+      <button class="journal-tab" data-tab="quests">Quests</button>
+      <button class="journal-tab" data-tab="garden">Garden</button>
+      <button class="journal-tab" data-tab="map">Map</button>
+      <button class="journal-tab" data-tab="about">About</button>
+    </div>
+    <div id="journal-tab-inventory" class="journal-tab-content active">
+
+      <div id="journal-inventory-grid"></div>
+      <div id="journal-inventory-stats"></div>
+    </div>
+    <div id="journal-tab-quests" class="journal-tab-content"></div>
+    <div id="journal-tab-garden" class="journal-tab-content">
+      <div id="garden-journal-grid"></div>
+      <div id="garden-journal-stats"></div>
+    </div>
+    <div id="journal-tab-map" class="journal-tab-content">
+      <div class="map-tab-wrapper">
+        <canvas id="map-tab-canvas"></canvas>
+        <div class="map-legend">
+          <span class="map-legend-item"><span class="map-dot" style="background:#ff4444"></span> You</span>
+          <span class="map-legend-item"><span class="map-dot" style="background:#44ff44"></span> NPC</span>
+          <span class="map-legend-item"><span class="map-dot" style="background:#aa77ff"></span> Portal</span>
+          <span class="map-legend-item"><span class="map-dot" style="background:#ffaa44"></span> Other Players</span>
+        </div>
+      </div>
+    </div>
+    <div id="journal-tab-about" class="journal-tab-content">
+      <div class="journal-placeholder">
+        <div class="journal-placeholder-title">About</div>
+        <div class="journal-placeholder-text">Hi! I'm Wyatt, a developer who loves building things. This portfolio is a 2D pixel art world — walk around and explore my projects!</div>
+        <div class="journal-placeholder-note">WASD to move, E to interact, J for journal</div>
+        <div id="reset-section" style="margin-top:24px;padding-top:16px;border-top:1px solid rgba(68,170,68,0.15);">
+          <button id="reset-progress-btn" style="font-family:'Press Start 2P',monospace;font-size:8px;padding:6px 14px;border:1px solid #884444;border-radius:3px;background:rgba(136,68,68,0.15);color:#aa6666;cursor:pointer;">Reset Progress</button>
+        </div>
+      </div>
+    </div>
+    <div id="garden-journal-nav-hint">A/D to switch tabs, ESC to close</div>
+  </div>
+</div>
+
+<!-- Library Book UI -->
+<div id="library-book">
+  <div class="library-content">
+    <button id="library-close">x</button>
+    <h3 id="library-title"></h3>
+    <div id="library-body"></div>
+    <div id="library-cost"></div>
+    <div id="library-actions">
+      <button id="library-buy-btn">Unlock</button>
+    </div>
+    <div class="library-nav-hint">E to unlock, ESC to close</div>
+  </div>
+</div>
+
+<!-- Store UI -->
+<div id="store-ui">
+  <div class="store-content">
+    <button id="store-close">x</button>
+    <h3>Store</h3>
+    <div id="store-gold">Gold: 0g</div>
+    <div class="store-tabs">
+      <button class="store-tab active" id="store-tab-buy">Buy</button>
+      <button class="store-tab" id="store-tab-sell">Sell</button>
+    </div>
+    <div id="store-list"></div>
+    <div class="store-nav-hint">A/D tabs, W/S select, E confirm, ESC close</div>
+  </div>
+</div>
+
+<!-- Crafting UI -->
+<div id="crafting-ui">
+  <div class="crafting-content">
+    <button id="crafting-close">x</button>
+    <h3>Crafting Station</h3>
+    <div id="crafting-gold">Gold: 0g</div>
+    <div id="crafting-list"></div>
+    <div class="crafting-nav-hint">W/S select, E craft, ESC close</div>
+  </div>
+</div>
+
+<!-- Garden: Use Item Sub-menu -->
+<div id="garden-useitem-menu">
+  <h4>Use Item</h4>
+  <div id="garden-useitem-list"></div>
+  <div id="garden-useitem-hint">W/S select, E use, ESC back</div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="projects.js"></script>
+<script src="world.js"></script>
+<script src="multiplayer.js"></script>
+<script src="garden.js"></script>
+<script src="library.js"></script>
+<script src="store.js"></script>
+<script src="quests.js"></script>
+<script src="crafting.js"></script>
+<script src="game.js"></script>
+
+</body>
+</html>
